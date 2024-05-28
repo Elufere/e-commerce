@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { MdOutlineRemoveShoppingCart } from "react-icons/md";
 import { IoSearch } from "react-icons/io5";
 import { FaRegHeart } from "react-icons/fa";
+import { Link } from 'react-router-dom';
 
 const Info = styled.div`
     opacity: 0.1;
@@ -74,7 +75,9 @@ export function Product({item}) {
                     <MdOutlineRemoveShoppingCart />
                 </Icon>
                 <Icon>
-                    <IoSearch />
+                    <Link to={`/product/${item._id}`}>
+                        <IoSearch />
+                    </Link>
                 </Icon>
                 <Icon>
                     <FaRegHeart />

@@ -2,7 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { IoSearchOutline } from "react-icons/io5";
 import { IoCartOutline } from "react-icons/io5";
-import {mobile} from "../responsive"
+import {mobile} from "../responsive";
+import {useSelector} from "react-redux";
 
 const Container = styled.div`
   height: 60px;
@@ -84,6 +85,8 @@ const CartBadge = styled.span`
 `;
 
 export default function Navbar() {
+  const quantity = useSelector(state=>state.cart.quantity);
+
   return (
     <Container>
       <Wrapper>
@@ -102,7 +105,7 @@ export default function Navbar() {
           <MenuItem>SIGN IN</MenuItem>
           <MenuItem>
             <CartIcon/>
-            <CartBadge>4</CartBadge>
+            <CartBadge>{quantity}</CartBadge>
           </MenuItem>
         </Right>
       </Wrapper>
