@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Navbar from '../components/Navbar';
 import Announcement from '../components/Announcement';
@@ -6,8 +6,12 @@ import { IoMdRemove } from "react-icons/io";
 import { IoMdAdd } from "react-icons/io";
 import { Footer } from '../components/Footer';
 import { mobile } from '../responsive';
+import { useSelector } from 'react-redux';
+import StripeCheckout from "react-stripe-checkout";
+import {userRequest} from "../requestMethods";
+import { useNavigate } from 'react-router-dom';
 
-
+const KEY = process.env.REACT_APP_STRIPE;
 const Container = styled.div``;
 
 const Wrapper = styled.div`
@@ -40,6 +44,7 @@ const TopButton = styled.button`
 const TopTexts = styled.div`
    ${mobile({ display: "none" })}
 `;
+
 const TopText = styled.span`
   text-decoration: underline;
   cursor: pointer;
@@ -155,8 +160,29 @@ const Button = styled.button`
   font-weight: 600;
 `;
 
+
 export function Cart() {
-    
+    const cart = useSelector(state => state.cart);
+    const [stripeToken, setStripeToken] = useState(null);
+    const navigate = useNavigate();
+
+    const onToken = (token) => {
+      setStripeToken(token); 
+    };
+
+    useEffect(()=>{
+      const makeRequest = async () => {
+        try{
+            const res = await userRequest.post("/checkout/payment", {
+              tokenId: stripeToken.id,
+              amount: cart.total * 100,
+            });
+            navigate("/success", {data: res.data});
+        }catch(err){}
+      };
+      stripeToken && makeRequest();
+    },[stripeToken, cart.total, navigate]);
+
     return (
         <Container>
           <Navbar />
@@ -173,63 +199,40 @@ export function Cart() {
             </Top>
             <Bottom>
               <Info>
-                <Product>
-                  <ProductDetail>
-                    <Image src="https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1614188818-TD1MTHU_SHOE_ANGLE_GLOBAL_MENS_TREE_DASHERS_THUNDER_b01b1013-cd8d-48e7-bed9-52db26515dc4.png?crop=1xw:1.00xh;center,top&resize=480%3A%2A" />
-                    <Details>
-                      <ProductName>
-                        <b>Product:</b> JESSIE THUNDER SHOES
-                      </ProductName>
-                      <ProductId>
-                        <b>ID:</b> 93813718293
-                      </ProductId>
-                      <ProductColor color="black" />
-                      <ProductSize>
-                        <b>Size:</b> 37.5
-                      </ProductSize>
-                    </Details>
-                  </ProductDetail>
-                  <PriceDetail>
-                    <ProductAmountContainer>
-                      <IoMdAdd />
-                      <ProductAmount>2</ProductAmount>
-                      <IoMdRemove />
-                    </ProductAmountContainer>
-                    <ProductPrice>$ 30</ProductPrice>
-                  </PriceDetail>
-                </Product>
                 <Hr />
-                <Product>
+                {cart.products.map(product => (
+                  <Product>
                   <ProductDetail>
-                    <Image src="https://i.pinimg.com/originals/2d/af/f8/2daff8e0823e51dd752704a47d5b795c.png" />
+                    <Image src={product.img} />
                     <Details>
                       <ProductName>
-                        <b>Product:</b> HAKURA T-SHIRT
+                        <b>Product:</b> {product.title}
                       </ProductName>
                       <ProductId>
-                        <b>ID:</b> 93813718293
+                        <b>ID:</b> {product._id}
                       </ProductId>
-                      <ProductColor color="gray" />
+                      <ProductColor color={product.color} />
                       <ProductSize>
-                        <b>Size:</b> M
+                        <b>Size:</b> {product.size}
                       </ProductSize>
                     </Details>
                   </ProductDetail>
                   <PriceDetail>
                     <ProductAmountContainer>
                       <IoMdAdd />
-                      <ProductAmount>1</ProductAmount>
+                      <ProductAmount>{product.quantity}</ProductAmount>
                       <IoMdRemove />
                     </ProductAmountContainer>
-                    <ProductPrice>$ 20</ProductPrice>
+                    <ProductPrice>$ {product.price * product.quantity}</ProductPrice>
                   </PriceDetail>
-                </Product>
+                </Product> 
+                ))}
               </Info>
               <Summary>
                 <SummaryTitle>ORDER SUMMARY</SummaryTitle>
                 <SummaryItem>
                   <SummaryItemText>Subtotal</SummaryItemText>
-                  <SummaryItemPrice>$ 80</SummaryItemPrice>
+                  <SummaryItemPrice>$ {cart.total}</SummaryItemPrice>
                 </SummaryItem>
                 <SummaryItem>
                   <SummaryItemText>Estimated Shipping</SummaryItemText>
@@ -241,9 +244,20 @@ export function Cart() {
                 </SummaryItem>
                 <SummaryItem type="total">
                   <SummaryItemText>Total</SummaryItemText>
-                  <SummaryItemPrice>$ 80</SummaryItemPrice>
+                  <SummaryItemPrice>$ {cart.total}</SummaryItemPrice>
                 </SummaryItem>
-                <Button>CHECKOUT NOW</Button>
+                <StripeCheckout
+                  name="karo shop"
+                  image="https://avatars.githubusercontent.com/u/1486366?v=4"
+                  billingAddress
+                  shippingAddress
+                  description={`Your total is ${cart.total}`}
+                  amount={cart.total * 100}
+                  token={onToken}
+                  stripeKey={KEY}
+                >
+                  <Button>CHECKOUT NOW</Button>
+                </StripeCheckout>
               </Summary>
             </Bottom>
           </Wrapper>

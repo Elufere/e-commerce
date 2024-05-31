@@ -4,6 +4,7 @@ import { IoSearchOutline } from "react-icons/io5";
 import { IoCartOutline } from "react-icons/io5";
 import {mobile} from "../responsive";
 import {useSelector} from "react-redux";
+import { Link } from 'react-router-dom';
 
 const Container = styled.div`
   height: 60px;
@@ -103,10 +104,12 @@ export default function Navbar() {
         <Right>
           <MenuItem>REGISTER</MenuItem>
           <MenuItem>SIGN IN</MenuItem>
-          <MenuItem>
-            <CartIcon/>
-            <CartBadge>{quantity}</CartBadge>
-          </MenuItem>
+          <Link to="/cart">
+            <MenuItem>
+              <CartIcon/>
+              <CartBadge>{quantity}</CartBadge>
+            </MenuItem>
+          </Link>
         </Right>
       </Wrapper>
     </Container>
